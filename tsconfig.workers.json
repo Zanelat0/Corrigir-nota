@@ -1,0 +1,6 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": { "noEmit": false, "incremental": false, "module": "CommonJS", "moduleResolution": "Node", "rootDir": "src", "outDir": ".workers", "plugins": [], "target": "ES2022" },
+  "include": ["src/lib/certificate/index.ts", "src/lib/certificate/worker.ts", "src/lib/certificate/trust.ts", "src/lib/nfe/cnpj-policy.ts", "src/types/contracts.ts"],
+  "exclude": ["node_modules", ".next", ".workers"]
+}

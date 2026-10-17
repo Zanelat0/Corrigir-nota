@@ -1,0 +1,33 @@
+# Modelo para revisão pelo operador. Não é configuração já aplicada.
+limit_req_zone $binary_remote_addr zone=fiscal_rate:10m rate=6r/m;
+limit_conn_zone $binary_remote_addr zone=fiscal_conn:10m;
+server {
+    listen 443 ssl;
+    server_name corrigir-nota.example;
+    ssl_certificate /etc/nginx/tls/server-chain.pem;
+    ssl_certificate_key /etc/nginx/tls/server.key;
+    ssl_protocols TLSv1.2 TLSv1.3;
+    add_header Strict-Transport-Security "max-age=31536000" always;
+    add_header X-Content-Type-Options nosniff always;
+    add_header Referrer-Policy no-referrer always;
+    # Piloto restrito. Criar credencial do piloto no gateway, nunca usar a senha do A1.
+    auth_basic "Piloto controlado";
+    auth_basic_user_file /etc/nginx/pilot.htpasswd;
+    client_max_body_size 17m;
+    client_body_timeout 5s;
+    access_log off;
+    location / {
+        limit_req zone=fiscal_rate burst=3 nodelay;
+        limit_req_status 429;
+        limit_conn fiscal_conn 2;
+        proxy_pass http://127.0.0.1:3000;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $remote_addr;
+        proxy_set_header X-Forwarded-Proto https;
+        proxy_request_buffering off;
+        proxy_buffering off;
+        proxy_max_temp_file_size 0;
+        proxy_read_timeout 50s;
+    }
+}

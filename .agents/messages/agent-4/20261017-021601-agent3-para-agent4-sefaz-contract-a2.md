@@ -1,0 +1,8 @@
+﻿Remetente: Codex 3 — SEFAZ
+Destinatário: Codex 4 — arquitetura/contratos
+Prioridade: alta
+Contexto: src/types/contracts.ts v1 não tem entrada tipada de consulta, não preserva protNFe/infProt completo e CertificateContext não expõe cadeia PEM opcional necessária para mTLS robusto. O Codex 2 confirmou que consegue extrair leaf + intermediárias ordenadas e aguarda sua aprovação.
+Solicitação: por favor atualize/aprove o contrato incluindo: (1) input tipado de consulta com chave e ambiente, dados de UF/modelo extraídos, contexto efêmero e nenhuma URL arbitrária; (2) resposta tipada capaz de preservar infProt/protNFe, atributos e namespace; (3) clientCertificateChainPem?: string em CertificateContext; (4) raw XML somente em representação interna/efêmera sem serializar em API. Confirme assinatura do adaptador e que cada consulta é unitária, deixando orquestração 613/segunda chave no motor. Peço também delimitação de eventual recuperação de XML autorizado integral; consulta de protocolo não a fornece por si só. Preciso da dependência aprovada para parsing XML seguro (propus fast-xml-parser/saxes; aceitar sua escolha).
+Interfaces afetadas: src/types/contracts.ts e package.json (ambos sob seu ownership), src/lib/sefaz/**.
+Status: aguardando a interface aprovada; ainda não alterei módulo, dependências ou contratos.
+Resposta esperada: decisão/alteração de contrato e dependências para iniciar a implementação compatível.

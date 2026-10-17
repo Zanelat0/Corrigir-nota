@@ -1,0 +1,30 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<soap:Envelope xmlns:soap="http://www.w3.org/2003/05/soap-envelope">
+  <soap:Body>
+    <nfeResultMsg xmlns="http://www.portalfiscal.inf.br/nfe/wsdl/NFeConsultaProtocolo4">
+      <retConsSitNFe xmlns="http://www.portalfiscal.inf.br/nfe" versao="4.00">
+        <tpAmb>1</tpAmb>
+        <verAplic>SVRS2026.10</verAplic>
+        <cStat>100</cStat>
+        <xMotivo>Autorizado o uso da NF-e &amp; protocolo dispon&#237;vel</xMotivo>
+        <cUF>42</cUF>
+        <dhRecbto>2026-09-30T12:41:19-03:00</dhRecbto>
+        <chNFe>42260901867724000108650010000257431536139497</chNFe>
+        <protNFe versao="4.00" xmlns="http://www.portalfiscal.inf.br/nfe">
+          <infProt Id="ID242261498431821" versao="4.00">
+            <tpAmb>1</tpAmb>
+            <verAplic>SVRS2026.10</verAplic>
+            <chNFe>42260901867724000108650010000257431536139497</chNFe>
+            <dhRecbto>2026-09-30T12:41:19-03:00</dhRecbto>
+            <nProt>242261498431821</nProt>
+            <digVal>simulated-digest-value</digVal>
+            <cStat>100</cStat>
+            <xMotivo>Autorizado o uso da NF-e</xMotivo>
+            <cMsg>0</cMsg>
+            <xMsg>Mensagem auxiliar simulada</xMsg>
+          </infProt>
+        </protNFe>
+      </retConsSitNFe>
+    </nfeResultMsg>
+  </soap:Body>
+</soap:Envelope>

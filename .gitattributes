@@ -1,0 +1,4 @@
+* text=auto
+# Schemas/archives oficiais são byte-exatos: o runtime verifica SHA-256.
+schemas/nfe/**/*.xsd -text
+schemas/nfe/*.zip -text

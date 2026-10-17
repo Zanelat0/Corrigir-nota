@@ -1,0 +1,55 @@
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { createAdmissionController, decodeLimitedBase64, protectSensitivePost, readSensitiveJson } from "./requests";
+import { assertXmlLimits } from "../nfe/xml";
+afterEach(() => { vi.useRealTimers(); vi.unstubAllEnvs(); });
+
+describe("H: request and XML resource limits", () => {
+  it("bounds simultaneous work and releases each slot only once", () => {
+    const acquire = createAdmissionController();
+    const first = acquire("a", 0); const second = acquire("b", 0);
+    expect(first.admitted && second.admitted).toBe(true); expect(acquire("c", 0).admitted).toBe(false);
+    first.release(); first.release();
+    const third = acquire("c", 0); expect(third.admitted).toBe(true); expect(acquire("d", 0).admitted).toBe(false);
+    second.release(); third.release();
+  });
+  it("enforces client windows and expiration", () => {
+    const acquire = createAdmissionController({ maxConcurrent: 2, perClient: 1, global: 3, windowMs: 1000, maxClients: 2 });
+    acquire("a", 0).release(); expect(acquire("a", 100).admitted).toBe(false);
+    expect(acquire("a", 1001).admitted).toBe(true);
+  });
+  it("limits the number of retained client entries", () => {
+    const acquire = createAdmissionController({ maxConcurrent: 2, perClient: 2, global: 10, windowMs: 1000, maxClients: 1 });
+    acquire("a", 0).release(); expect(acquire("b", 0).admitted).toBe(false);
+  });
+  it("rejects declared and streamed body sizes before parsing", async () => {
+    const request = new Request("https://local.test", { method: "POST", headers: { "content-type": "application/json", "content-length": "1000" }, body: "{}" });
+    await expect(readSensitiveJson(request, 10)).rejects.toMatchObject({ status: 413 });
+    const streamed = new Request("https://local.test", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ large: "a".repeat(100) }) });
+    await expect(readSensitiveJson(streamed, 10)).rejects.toMatchObject({ status: 413 });
+  });
+  it("rejects null/array JSON envelopes and invalid base64", async () => {
+    for (const body of ["null", "[]"]) await expect(readSensitiveJson(new Request("https://local.test", { method: "POST", body, headers: { "content-type": "application/json" } }), 1024)).rejects.toMatchObject({ status: 400 });
+    expect(() => decodeLimitedBase64("not-base64", 1024, "XML")).toThrow();
+    expect(() => decodeLimitedBase64(Buffer.alloc(20).toString("base64"), 10, "XML")).toThrow();
+  });
+  it("bounds body upload duration", async () => {
+    vi.useFakeTimers();
+    const request = new Request("https://local.test", { method: "POST", headers: { "content-type": "application/json" }, body: new ReadableStream(), duplex: "half" } as RequestInit);
+    const pending = expect(readSensitiveJson(request, 1024)).rejects.toMatchObject({ status: 408 });
+    await vi.advanceTimersByTimeAsync(5001); await pending;
+  });
+  it("reports a broken upload stream without exposing its error text", async () => {
+    const request = new Request("https://local.test", { method: "POST", headers: { "content-type": "application/json" }, body: new ReadableStream({ start(c) { c.error(new Error("SECRET FISCAL CONTENT")); } }), duplex: "half" } as RequestInit);
+    await expect(readSensitiveJson(request, 1024)).rejects.toMatchObject({ message: "O corpo deve conter um objeto JSON UTF-8 válido." });
+  });
+  it("ignores forged HTTPS proxy headers unless proxy trust is explicitly configured", async () => {
+    vi.stubEnv("NODE_ENV", "production"); vi.stubEnv("TRUST_PROXY", "false");
+    const handler = vi.fn(); const response = await protectSensitivePost(new Request("http://local.test", { headers: { "x-forwarded-proto": "https" } }), handler);
+    expect(response.status).toBe(400); expect(handler).not.toHaveBeenCalled();
+  });
+  it("rejects deep XML, excessive elements and DTD/entity expansion before recursive parsing", () => {
+    expect(() => assertXmlLimits("<a>".repeat(65) + "</a>".repeat(65))).toThrow();
+    expect(() => assertXmlLimits("<a>" + "<x/>".repeat(60_001) + "</a>")).toThrow();
+    expect(() => assertXmlLimits('<!DOCTYPE a [<!ENTITY x SYSTEM "https://invalid.test/">]><a>&x;</a>')).toThrow();
+  });
+});
