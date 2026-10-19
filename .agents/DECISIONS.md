@@ -1,5 +1,30 @@
 # Registro de decisões
 
+## D-018 — escopo pessoal e loopback (2026-10-18)
+
+- Decisão atual substitui SaaS: uma página, sem login/banco/histórico/cobrança/infra distribuída. Preservados módulos entregues, sem reescrita.
+- dev/start usam launcher fixando 127.0.0.1 e modo local/sem proxy. HTTP só nesse modo; URL/Host/porta/Origin/Fetch Metadata conferidos. HTTPS e acesso apropriado continuam requisitos de eventual remoto, não implementado.
+- Headers defensivos e smoke pelo launcher com bloqueio de Origin externo. Ownership/caixas/locks/Git conferidos; sem alteração concorrente; especialistas comunicados e mudanças cruzadas autorizadas. Contratos v1 mantidos.
+
+## D-019 — seleção XSD explícita (2026-10-18)
+
+- NFE_SCHEMA_POLICY_JSON: configuração pública até 64 regras/32 KiB, regra única modelo/UF/ambiente/faixa de emissão/referência. Perfis oficiais 009n histórico ou composição 010c anterior, hashes próprios/sem fallback.
+- Sem regra/data/configuração válida ou ambiguidade: SCHEMA_POLICY_UNAVAILABLE, sem download. Não é rejeição fiscal SEFAZ. Pode bloquear arquivo antes aceito pelo perfil genérico, deliberadamente.
+- Não inventar datas de corte por nome de pacote ou versão 4.00. Portal Nacional referenciado falhou na pesquisa; SVRS consultada. Calendário real NT/UF/ambiente/data exige qualificação do operador; exemplo/testes só sintéticos.
+
+## D-020 — forge e revogação (2026-10-18)
+
+- Advisory oficial/registry revistos: node-forge 1.4.0 afetado, sem patch. TLS nativo aceita PFX, mas não extrai toda identidade/KeyObject/cadeia por API pública; PKI.js candidato sem corpus A1 real/legado comprovado. Nenhuma dependência instalada/removida/atualizada; lockfile preservado.
+- Parsing/MAC isolado sem verificador RSA forge mantido; audit high não corrigido. Localhost reduz exposição, não elimina risco.
+- REQUIRE_CERTIFICATE_REVOCATION=true falha fechado com configuração indisponível/503 porque CRL/OCSP ainda inexiste; false não atesta revogação. PKIX parcial/âncoras e limitação de signatário histórico documentadas.
+
+## D-021 — operação e evidências locais (2026-10-18)
+
+- DTO A1 ganha certificateCnpj opcional; UI mostra CNPJ/trust/avisos, remove contato comercial fictício e permite remover A1/limpar operação. Drag/drop de original limpa segundo XML; finally antigo abortado não altera loading de chamada nova.
+- Testes verificam dispose em sucesso/falha e nenhum segredo no erro; falhas XSD de worker/timeout/configuração/política não liberam arquivo.
+- Baseline reexecutada 84/11, typecheck/lint limpos. Nova rodada 103 testes/12 arquivos; build/smoke aprovados. Erros introduzidos/corrigidos: tipagem de headers de teste; guard estrito com alias localhost/127.0.0.1 normalizado pelo Next; tracing amplo corrigido por caminhos estáticos.
+- Nenhum A1/SEFAZ real, transmissão/emissão ou publicação. Demonstração local sintética e preparação de homologação autorizada, não operação fiscal validada.
+
 ## D-001 — fronteiras de ownership
 
 - Data: 2026-10-17

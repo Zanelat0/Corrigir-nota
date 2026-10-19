@@ -1,5 +1,7 @@
 # Certificados A1 efêmeros
 
+Revisão local 2026-10-18: DTO público adiciona certificateCnpj opcional; UI exibe confiança parcial e avisos. REQUIRE_CERTIFICATE_REVOCATION=true retorna erro técnico/503 (não há CRL/OCSP implementado); false não é prova de revogação. Não desabilitar âncoras por ser localhost. Forge 1.4.0 continua com advisory high sem patch, reavaliado; nenhuma dependência substituída sem corpus A1 real. README raiz orienta configuração e teste autorizado, sem enviar senha/PFX pelo chat.
+
 `createCertificateContext(pfx: Buffer, password: string): Promise<CertificateContext>` e `validateCertificate(pfx, password)` são APIs backend Node. O PFX é consumido e o Buffer zerado; nenhuma credencial é persistida. `dispose()` é idempotente e deve ser chamado em finally pela rota.
 
 O parser PKCS#12 existente (`node-forge@1.4.0`, MAC obrigatório, chave RSA/certificado correspondente, datas/usos, CNPJ ICP-Brasil OID 2.16.76.1.3.3/fallback inequívoco) passou a rodar num processo filho. `parsePkcs12Locally` é somente entrada interna do worker. Compilar `.workers` com `npm run build:workers`; predev/pretest/prebuild fazem isso automaticamente. Deadline 5 s/heap V8 96 MiB, segredo por IPC e nunca em argumento/arquivo. O contexto retém KeyObject encapsulado e metadados; stdout/stderr do filho são ignorados. Não há promessa de apagamento físico de todas as cópias JS/OpenSSL antes de GC/encerramento.

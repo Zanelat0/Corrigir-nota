@@ -1,4 +1,12 @@
-# Arquitetura — revisão fiscal
+# Arquitetura — revisão pessoal/local de 2026-10-18
+
+## Revisão vigente (supera referências anteriores a deploy SaaS)
+
+Escopo exclusivamente pessoal, sem login/banco/infraestrutura distribuída. `npm run dev`/`npm start` invocam scripts/local.mjs, que vincula 127.0.0.1 e força CORRIGIR_NOTA_LOCAL_ONLY=true/TRUST_PROXY=false. HTTP é permitido somente nesse modo, mesmo no build. Guard confere URL/Host/porta/Origin/Fetch Metadata; Next pode normalizar URL como localhost, mas Host continua loopback e Origin deve corresponder exatamente ao Host. Remoto fica fora do escopo e exigirá HTTPS/controle de acesso.
+
+XSD agora tem política explícita NFE_SCHEMA_POLICY_JSON por modelo/UF/ambiente/data, regra única e referência de qualificação. Perfis oficiais 009n e 010c têm hashes próprios; não há fallback nem datas de vigência presumidas. Política ausente/ambígua/fora da faixa bloqueia download como SCHEMA_POLICY_UNAVAILABLE. Calendário real ainda não qualificado. REQUIRE_CERTIFICATE_REVOCATION=true bloqueia com erro técnico porque CRL/OCSP não está implementado. Cadeia permanece parcial.
+
+Contratos v1 preservados; CertificateValidationResult ganhou certificateCnpj opcional. UI mostra trust/avisos e limpa segundo XML ao trocar original. Fluxos fiscais, limites, processos isolados e finally abaixo foram preservados. Ingress distribuído/autenticação comercial mencionados adiante pertencem ao escopo remoto anterior, não são requisitos de localhost. Guia atual: README.md.
 
 Stack Next.js App Router/React/TypeScript estrito/Tailwind/Node. Sem banco ou sessão de credenciais. Ownership e comunicação permanecem em AGENTS.md; esta fase foi autorizada ao coordenador e comunicada aos especialistas antes de editar módulos entregues.
 

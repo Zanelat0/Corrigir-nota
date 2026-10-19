@@ -1,5 +1,5 @@
 import { generateKeyPairSync, X509Certificate } from "node:crypto";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import forge from "node-forge";
 import { POST as validateRoute } from "../../app/api/certificado/validar/route";
 import {
@@ -10,6 +10,15 @@ import {
 
 const TEST_PASSWORD = "fixture-password";
 const TEST_CNPJ = "11222333000181";
+
+it("fails closed when the operator requires unavailable revocation validation", async () => {
+  vi.stubEnv("REQUIRE_CERTIFICATE_REVOCATION", "true");
+  const pfx = makePfx({ cnpj: TEST_CNPJ });
+  try {
+    await expect(validateCertificate(pfx, TEST_PASSWORD)).rejects.toMatchObject({ code: "CERTIFICATE_TRUST_CONFIGURATION" });
+    expect(pfx.every((byte) => byte === 0)).toBe(true);
+  } finally { vi.unstubAllEnvs(); pfx.fill(0); }
+});
 
 const generated = generateKeyPairSync("rsa", { modulusLength: 2048 });
 const forgePrivateKey = forge.pki.privateKeyFromPem(

@@ -1,14 +1,17 @@
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { SYNTHETIC_SCHEMA_POLICY } from "./testing/schema-policy";
 import { syntheticContext, syntheticNfe } from "./testing/synthetic";
 import { validateFiscalXml } from "./schema";
 import { recoverNfe } from "./recovery";
+beforeEach(() => vi.stubEnv("NFE_SCHEMA_POLICY_JSON", SYNTHETIC_SCHEMA_POLICY));
+afterEach(() => vi.unstubAllEnvs());
 
 describe("Fiscal acceptance with synthetic XML/signatures and simulated consultation only", () => {
   it("validates the complete model 65 document against the official XSD", async () => {
     expect(await validateFiscalXml(syntheticNfe().nfeProc)).toMatchObject({ valid: true });
   });
   it("rejects a well-formed but incomplete fiscal XML against XSD", async () => {
-    expect(await validateFiscalXml('<nfeProc xmlns="http://www.portalfiscal.inf.br/nfe" versao="4.00"/>')).toMatchObject({ valid: false, code: "XSD_VALIDATION_FAILED" });
+    expect(await validateFiscalXml(syntheticNfe().nfeProc.replace(/<total>[\s\S]*?<\/total>/, ""))).toMatchObject({ valid: false, code: "XSD_VALIDATION_FAILED" });
   });
   it("A: recovers the same key with actual signature and XSD checks", async () => {
     const doc = syntheticNfe();
@@ -91,9 +94,9 @@ describe("Fiscal acceptance with synthetic XML/signatures and simulated consulta
     const result = await recoverNfe({ xml: doc.xml, certificateContext: syntheticContext() }, { now: () => new Date("2026-10-17T12:00:00Z"), consult: vi.fn().mockResolvedValue(doc.consultation) });
     expect(result.expiresAt).toBe("2026-10-17T12:15:00.000Z");
   });
-  it("reports schema infrastructure failure as unavailable rather than fiscal rejection", async () => {
+  it.each(["SCHEMA_CONFIGURATION_ERROR", "SCHEMA_WORKER_EXIT", "XSD_TIMEOUT", "SCHEMA_POLICY_UNAVAILABLE"])("reports schema failure %s as unavailable rather than fiscal rejection", async (code) => {
     const doc = syntheticNfe();
-    const result = await recoverNfe({ xml: doc.xml, certificateContext: syntheticContext() }, { consult: vi.fn().mockResolvedValue(doc.consultation), schemaValidator: async () => ({ valid: false, profile: "SIMULATED_UNAVAILABLE", code: "SCHEMA_CONFIGURATION_ERROR" }) });
+    const result = await recoverNfe({ xml: doc.xml, certificateContext: syntheticContext() }, { consult: vi.fn().mockResolvedValue(doc.consultation), schemaValidator: async () => ({ valid: false, profile: "SIMULATED_UNAVAILABLE", code }) });
     expect(result.status).toBe("service_unavailable"); expect(result).not.toHaveProperty("authorizedXml");
   });
 });

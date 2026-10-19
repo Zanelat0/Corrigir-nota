@@ -1,4 +1,14 @@
-# Revisão de segurança — 2026-10-17
+# Revisão de segurança — 2026-10-18
+
+## Revisão pessoal/local vigente
+
+- Ferramenta pessoal, sem login/contas/banco/infra distribuída. Launcher dev/start vincula 127.0.0.1 e força guard local/sem proxy. Exceção HTTP só nesse modo; Host/Origin/porta/Fetch Metadata bloqueiam sites externos/rebinding. Não protege contra processo malicioso no mesmo computador. Remoto não implantado/aprovado; exige HTTPS e acesso apropriado futuramente.
+- Headers nosniff/frame DENY/no-referrer/Permissions-Policy restritiva adicionados. Smoke usa launcher real e testa Origin externo, sem falsificar HTTPS via proxy.
+- GHSA-86w9-cpqp-85rv revisto: <=1.4.0 afetado, nenhuma versão corrigida; npm view continua 1.4.0. Mantido parsing PKCS#12/MAC isolado sem verificador RSA forge. TLS nativo e PKI.js reavaliados, mas sem corpus A1 real não há migração segura comprovada. Nenhuma dependência instalada/removida/substituída; audit de produção segue high, não corrigido.
+- REQUIRE_CERTIFICATE_REVOCATION=true falha fechado (503/configuração indisponível); false declara ausência de CRL/OCSP. Âncoras continuam exigidas pela configuração operacional; não relaxar confiança por ser localhost.
+- Política XSD explícita por modelo/UF/ambiente/data seleciona 009n ou 010c com hashes fixos, sem fallback. Calendário real não qualificado; exemplo só sintético.
+- Segundo XML é descartado ao trocar original por drag/drop; remoção do A1 limpa operação. UI exibe CNPJ/trust/avisos. Testes HTTP verificam dispose em sucesso e falha inesperada, sem vazamento de erro.
+- Riscos mantidos: memória nativa/WASM sem cota SO rígida, strings sem apagamento físico garantido, PKIX/revogação completos e renovação de signatário não suportados, A1/SEFAZ reais não validados. Requisitos de ingress/autenticação/distribuição abaixo são históricos do escopo remoto anterior, não requisitos atuais de localhost.
 
 ## Dependências e substituição do PKCS#12
 

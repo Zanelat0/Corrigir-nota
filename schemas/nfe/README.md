@@ -1,5 +1,13 @@
 # Schemas oficiais NF-e/NFC-e 4.00 — snapshot local
 
+## Seleção vigente — 2026-10-18
+
+Não se aplica mais um pacote único a todos os documentos. `schema-policy.ts` exige NFE_SCHEMA_POLICY_JSON com regra única qualificada por modelo 55/65, cUF, tpAmb e data de emissão (from/through inclusivos), com referência de vigência. Ausência/sobreposição/fora da faixa: SCHEMA_POLICY_UNAVAILABLE, sem download. Versão 4.00 é exigida no parser.
+
+Perfis: `NFe-4.00-PL009n-NT2023.004-v1.01+NT2019.001-v1.62` usa cinco arquivos originais 009n/hashes próprios; `NFe-4.00-PL010c-NT2022.002-v1.30+proc009n` preserva a composição anterior. Ambos passaram com documento sintético completo. Nunca se tenta o outro após falha. ZIPs oficiais abaixo permanecem inalterados.
+
+O nome/data de uma NT não comprova vigência para uma emissão específica. Não há calendário fiscal real pré-aprovado: qualificar por ato oficial/UF/ambiente, inclusive convivência. Portal Nacional não respondeu à ferramenta de pesquisa nesta sessão; SVRS foi consultada como fonte oficial alternativa. Não se inferiu que 010c cubra todas NTs 2026. Exemplo no README raiz é exclusivamente sintético. Onde o histórico abaixo menciona perfil único, esta seção o supera.
+
 Obtidos diretamente da página [Documentos NF-e da SVRS](https://dfe-portal.svrs.rs.gov.br/Nfe/Documentos) em 2026-10-17, sem certificado e sem enviar dados fiscais. Os arquivos oficiais não foram editados.
 
 | Arquivo público | SHA-256 do ZIP | Uso |

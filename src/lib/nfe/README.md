@@ -1,5 +1,7 @@
 # Motor NF-e/NFC-e
 
+Revisão pessoal 2026-10-18: política pública NFE_SCHEMA_POLICY_JSON exige regra única modelo/UF/ambiente/data e seleciona perfil 009n histórico ou 010c, sem fallback. Sem qualificação aplicável: SCHEMA_POLICY_UNAVAILABLE, sem arquivo. Calendário real de NT ainda não qualificado; exemplos só sintéticos. README raiz contém setup e manual autorizado. Fixture sem data/política agora recebe indisponibilidade de seleção; fixture completa estruturalmente inválida testa rejeição XSD real.
+
 `recoverNfe({ xml, authorizedXml?, certificateContext }, overrides?)` orquestra parsing, identidade, consulta unitária, alternativa 613 e composição validada. Dependências injetáveis são usadas por testes; a rota pública não aceita verificador, protocolo ou transporte fornecidos pelo cliente.
 
 - `xml.ts`: preflight de recursos antes do parser, chave/DV, infNFe/ide/emit/assinatura/QR; XMLDSig com referência local única ao Id, X509 embutido correspondente ao A1 e transforms restritas; leitura do digest e conferência do protocolo bruto. Fragmentos NFe/protNFe são extraídos sem reserializar.

@@ -4,6 +4,40 @@ import { assertXmlLimits } from "../nfe/xml";
 afterEach(() => { vi.useRealTimers(); vi.unstubAllEnvs(); });
 
 describe("H: request and XML resource limits", () => {
+  it("allows HTTP production build only in explicit loopback mode and releases the slot after failure", async () => {
+    vi.stubEnv("NODE_ENV", "production"); vi.stubEnv("CORRIGIR_NOTA_LOCAL_ONLY", "true"); vi.stubEnv("TRUST_PROXY", "false");
+    const request = () => new Request("http://127.0.0.1:3000/api/test", { headers: { host: "127.0.0.1:3000", origin: "http://127.0.0.1:3000", "sec-fetch-site": "same-origin" } });
+    expect((await protectSensitivePost(request(), async () => { throw new Error("secret"); })).status).toBe(500);
+    const response = await protectSensitivePost(request(), async () => Response.json({ ok: true }));
+    expect(response.status).toBe(200);
+  });
+  it.each([
+    { host: "attacker.invalid:3000" }, { origin: "https://attacker.invalid" },
+    { origin: "null" }, { origin: "http://127.0.0.1:4000" }, { "sec-fetch-site": "cross-site" },
+    { "sec-fetch-site": "same-site" },
+  ])("blocks DNS rebinding and cross-origin local API calls: %j", async (headers) => {
+    vi.stubEnv("CORRIGIR_NOTA_LOCAL_ONLY", "true"); vi.stubEnv("TRUST_PROXY", "false");
+    const handler = vi.fn();
+    const requestHeaders = new Headers();
+    for (const [name, value] of Object.entries(headers)) if (value) requestHeaders.set(name, value);
+    const response = await protectSensitivePost(new Request("http://127.0.0.1:3000/api/test", { headers: requestHeaders }), handler);
+    expect(response.status).toBe(403); expect(handler).not.toHaveBeenCalled();
+    expect(response.headers.get("cache-control")).toBe("no-store");
+  });
+  it("rejects LAN addresses and proxy mode in local-only mode", async () => {
+    vi.stubEnv("CORRIGIR_NOTA_LOCAL_ONLY", "true"); vi.stubEnv("TRUST_PROXY", "false");
+    const handler = vi.fn();
+    expect((await protectSensitivePost(new Request("http://192.168.1.2:3000"), handler)).status).toBe(403);
+    vi.stubEnv("TRUST_PROXY", "true");
+    expect((await protectSensitivePost(new Request("http://localhost:3000"), handler)).status).toBe(403);
+    expect(handler).not.toHaveBeenCalled();
+  });
+  it("accepts Next's localhost normalization only for a loopback Host and its exact origin/port", async () => {
+    vi.stubEnv("CORRIGIR_NOTA_LOCAL_ONLY", "true"); vi.stubEnv("TRUST_PROXY", "false");
+    const headers = { host: "127.0.0.1:3000", origin: "http://127.0.0.1:3000" };
+    expect((await protectSensitivePost(new Request("http://localhost:3000/api/test", { headers }), async () => Response.json({ ok: true }))).status).toBe(200);
+    expect((await protectSensitivePost(new Request("http://localhost:3000/api/test", { headers: { ...headers, host: "127.0.0.1:4000" } }), async () => Response.json({ ok: true }))).status).toBe(403);
+  });
   it("bounds simultaneous work and releases each slot only once", () => {
     const acquire = createAdmissionController();
     const first = acquire("a", 0); const second = acquire("b", 0);

@@ -1,5 +1,11 @@
 # Recuperação NFC-e na SVRS — verificação de 2026-10-17
 
+## Reavaliação pessoal — 2026-10-18
+
+Portal NFC-e e relação oficial de Web Services reabertos; continuam distinguindo Download XML interativo de NFeConsultaProtocolo. Não foi encontrada API pública automática oficialmente documentada de download NFC-e nessa relação. Nenhuma sessão autenticada/scraping/CAPTCHA/consulta fiscal. Upload manual preservado como alternativa suficiente ao uso pessoal; elegibilidade/disponibilidade específicas por documento/UF continuam sem comprovação real.
+
+Endereços de consulta protocolar dos modelos 55/65 e ambientes foram revistos nas relações públicas SVRS (https://dfe-portal.svrs.rs.gov.br/Nfe/Servicos e https://dfe-portal.svrs.rs.gov.br/Nfce/Servicos), sem chamar Web Services. Registry preservado, incluindo SVRS NFC-e para SC; credenciamento/mTLS reais continuam não comprovados. Portal Nacional indicado pelo usuário retornou erro à ferramenta de pesquisa, não foi declarado verificado nesta rodada.
+
 ## Evidência e conclusão técnica
 
 O [portal oficial NFC-e](https://dfe-portal.svrs.rs.gov.br/NFCe) publica um serviço interativo de [Download XML](https://dfe-portal.svrs.rs.gov.br/NFCESSL/DownloadXMLDFe). O GET público dessa entrada, feito sem credenciais, retornou a página que exige certificado emitido por AC credenciada na ICP-Brasil, com orientação para disponibilidade do certificado A3. Não foram fornecidos certificado/senha, criada sessão autenticada nem tentado acesso a documento fiscal.

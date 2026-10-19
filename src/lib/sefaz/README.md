@@ -1,5 +1,7 @@
 # Consulta SEFAZ por protocolo
 
+Revisão pessoal/local 2026-10-18: endpoints públicos dos modelos 55/65 revistos nas relações oficiais SVRS; nenhuma consulta real. Cliente/protocolos e separação dos ambientes preservados; serviço de consulta não fornece XML integral. Não foi localizada API pública automática documentada de download NFC-e; upload manual continua alternativa. Ingress/limiter distribuído mencionados no histórico não são necessários a uma instância loopback. README raiz traz homologação autorizada e produção somente leitura separadas, sem alterar tpAmb do XML.
+
 Implementação de `consultProtocol(input)` como consulta unitária, exclusivamente de leitura, ao Web Service `NFeConsultaProtocolo` leiaute 4.00. O motor do Codex 4 decide se uma resposta 613 justifica uma chamada separada à chave indicada; esta biblioteca não transmite NF-e nem compõe/edita XML fiscal.
 
 ## Endpoints no registro

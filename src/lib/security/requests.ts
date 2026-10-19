@@ -31,9 +31,23 @@ function clientKey(request: Request) {
   return createHash("sha256").update(`${salt}:${address && isIP(address) ? address : "shared"}`).digest("hex");
 }
 export async function protectSensitivePost(request: Request, handler: () => Promise<Response>): Promise<Response> {
+  const localOnly = process.env.CORRIGIR_NOTA_LOCAL_ONLY === "true";
+  const url = new URL(request.url);
+  if (localOnly) {
+    const loopback = (host: string) => ["127.0.0.1", "localhost", "[::1]"].includes(host);
+    // Host checks complement the mandatory loopback socket binding in scripts/local.mjs.
+    // Never infer the peer address from an untrusted proxy header.
+    let host: URL;
+    try { host = new URL(`${url.protocol}//${request.headers.get("host") ?? url.host}`); }
+    catch { return apiFailure(403, "INVALID_REQUEST", "Acesso permitido somente pela interface local."); }
+    // Next may normalize request.url to localhost while the browser uses 127.0.0.1.
+    if (!loopback(url.hostname) || !loopback(host.hostname) || host.port !== url.port || process.env.TRUST_PROXY === "true") return apiFailure(403, "INVALID_REQUEST", "Acesso permitido somente pela interface local.");
+    const origin = request.headers.get("origin");
+    if ((origin && origin !== host.origin) || ["cross-site", "same-site"].includes(request.headers.get("sec-fetch-site") ?? "")) return apiFailure(403, "INVALID_REQUEST", "Origem da requisição não permitida. Abra a aplicação diretamente em localhost.");
+  }
   const forwarded = request.headers.get("x-forwarded-proto");
   const https = process.env.TRUST_PROXY === "true" ? forwarded === "https" : !forwarded && new URL(request.url).protocol === "https:";
-  if (process.env.NODE_ENV === "production" && !https) return apiFailure(400, "INVALID_REQUEST", "Esta operação exige HTTPS.");
+  if (process.env.NODE_ENV === "production" && !https && !localOnly) return apiFailure(400, "INVALID_REQUEST", "Esta operação exige HTTPS.");
   const lease = acquire(clientKey(request));
   if (!lease.admitted) return apiFailure(429, "RATE_LIMITED", "Limite temporário de requisições ou processamento simultâneo.", true, lease.retryAfter);
   try { return await handler(); } catch (error) {

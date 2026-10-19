@@ -6,7 +6,7 @@ No começo de cada sessão, leia por inteiro, nesta ordem: `AGENTS.md`, `.agents
 
 ## Objetivo e contexto fiscal
 
-Este SaaS recupera XML de NF-e/NFC-e usando certificado A1 temporário e consulta oficial à SEFAZ. O XML original informado contém a chave `42260901867724000108650010000257439594944564`; a consulta retornou cStat 613 e indicou a chave `42260901867724000108650010000257431536139497`. A consulta da segunda chave retornou cStat 100 e protocolo `242261498431821`. A primeira chave tem `tpEmis=9` (contingência) e a segunda `tpEmis=1`.
+Ferramenta de uso exclusivamente pessoal/local, sem escopo comercial, login ou banco. Recupera XML de NF-e/NFC-e usando certificado A1 temporário e consulta oficial à SEFAZ. O XML original informado contém a chave `42260901867724000108650010000257439594944564`; a consulta retornou cStat 613 e indicou a chave `42260901867724000108650010000257431536139497`. A consulta da segunda chave retornou cStat 100 e protocolo `242261498431821`. A primeira chave tem `tpEmis=9` (contingência) e a segunda `tpEmis=1`.
 
 As chaves representam documentos assinados distintos. Nunca anexe o `protNFe` da segunda chave ao XML da primeira. Preserve XML e assinatura originais. Só disponibilize XML recuperado quando ele for o documento efetivamente autorizado e suas chaves, assinatura, documento e protocolo tiverem sido conferidos. XML bem formado ou sintaticamente válido não é prova de autorização. Se o XML autorizado correspondente não puder ser recuperado, informe essa impossibilidade e não produza XML corrigido. O sistema não autoriza, transmite nem altera notas.
 
@@ -29,6 +29,8 @@ Cada agente mantém `.agents/status/agent-N.md` e sua caixa `.agents/messages/ag
 
 - Certificado e senha são fornecidos a cada utilização e existem somente durante o processamento em memória. Não persista certificados ou senhas em arquivos, logs, banco, cookies ou `localStorage`.
 - Segredos e operações criptográficas ficam no runtime Node.js; nunca no browser/Edge. Produção exige HTTPS.
+- Iniciar pelos scripts locais que vinculam somente 127.0.0.1. HTTP é exceção exclusivamente para loopback; acesso remoto futuro exige HTTPS e controle de acesso, não habilitados nesta fase. Não adicionar infraestrutura SaaS.
+- Qualificar schema por modelo/UF/ambiente/data em política explícita; não inferir vigência só de versão 4.00 ou fazer fallback para aceitar documento. CRL/OCSP não está implementado; política que exija revogação deve bloquear.
 - Limite tamanho e tipo de uploads. Faça parsing XML com proteção contra XXE e sem resolução de entidades externas.
 - Testes automatizados não conectam à produção da SEFAZ. Fixtures/simulações devem ser claramente identificadas e nunca apresentadas como resposta oficial.
 - Não registrar XML, certificado ou senha em logs. Respostas públicas devem minimizar dados pessoais.

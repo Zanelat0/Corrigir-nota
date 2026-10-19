@@ -1,4 +1,16 @@
-# Aceitação técnica — 2026-10-17
+# Aceitação técnica — revisão pessoal/local de 2026-10-18
+
+## Rodada vigente (histórico anterior preservado abaixo)
+
+Baseline 63d4678 limpa e reexecutada: typecheck/lint e 84/84 testes aprovados. Rodada nova: **103 testes em 12 arquivos** aprovados, typecheck/lint limpos, build sem warnings e smoke HTTP loopback aprovados. Audit de produção exit 1: um high node-forge sem patch. Nenhuma dependência alterada/instalada nesta sessão; scripts npm alterados, lockfile preservado.
+
+Cobertura nova: modo local HTTP no build; Host/Origin/portas/Fetch Metadata/rebinding/proxy proibido e alias Next; liberação do limiter após exceção; regra XSD por modelo/UF/ambiente/data, política ausente/ambígua/inválida/data impossível; dois perfis XSD oficiais com XML sintético; worker/timeout/configuração/política sem arquivo; revogação exigida bloqueia; dispose de contexto A1 sintético em sucesso e falha inesperada.
+
+Smoke usa launcher real em 127.0.0.1, sem falsificar HTTPS, e rejeita Origin externo/XML não fiscal antes de consulta. Sem teste visual interativo, A1 real, consulta real ou comprovação de download no portal. Limites e falhas de processo são testados/simulados; não se provocou OOM real nem se afirma cota nativa rígida.
+
+Introduzidos e corrigidos nesta sessão: TS2352 nos headers do teste; smoke 403 por alias localhost/127.0.0.1; warning de tracing do projeto inteiro. Não eram erros dos agentes. Advisory/CRL/OCSP e validação externa são limitações preexistentes.
+
+Parecer atual: demonstração local sintética disponível; operação fiscal pessoal **ainda não validada**. Requer âncoras públicas confiáveis, qualificação XSD, A1 real/homologação autorizada e, separadamente, produção somente leitura autorizada. Sem login/ingress/SaaS no escopo atual. Setup/manual: README.md.
 
 Dados de testes são sintéticos, certificados/chaves gerados em memória e consultas injetadas/simuladas. Não há certificado real nem consulta à SEFAZ de produção/homologação nesta evidência.
 

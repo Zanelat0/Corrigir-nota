@@ -21,6 +21,7 @@ export interface CertificateValidationResult {
   serialNumber?: string;
   validFrom?: string;
   validTo?: string;
+  certificateCnpj?: string;
   errors: string[];
   warnings?: RecoveryWarning[];
   trust?: CertificateTrustAssessment;

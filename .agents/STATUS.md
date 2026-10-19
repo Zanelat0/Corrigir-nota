@@ -1,4 +1,22 @@
-# Status geral — 2026-10-17
+# Status geral — revisão vigente de 2026-10-18
+
+## Uso exclusivamente pessoal/local
+
+Baseline 63d4678 conferida sem alterações e reexecutada: 84 testes/11 arquivos, typecheck/lint aprovados. Escopo atual substitui SaaS: uma página, sem login/banco/histórico/contas/cobrança; módulos funcionais preservados. Documentação histórica abaixo não exige ingress/infra distribuída para localhost.
+
+Entregas: scripts dev/start fixam 127.0.0.1; guard local HTTP confere Host/Origin/porta/Fetch Metadata e proíbe proxy. Headers defensivos; smoke pelo launcher real, sem proxy HTTPS fictício. UI pessoal com remoção do A1, CNPJ/trust/avisos; drag/drop limpa segundo XML e chamadas abortadas antigas não alteram loading novo.
+
+XSD: perfis oficiais 009n histórico e 010c com hashes; NFE_SCHEMA_POLICY_JSON exige regra única modelo/UF/ambiente/data/referência, sem fallback ou vigência inventada. Política ausente/ambígua/fora da faixa bloqueia download. Calendário real ainda não qualificado. Revogação obrigatória configurada bloqueia, pois CRL/OCSP ainda não está implementado. Trust parcial/mesmo A1 signatário mantidos.
+
+Verificação atual: **103 testes em 12 arquivos**, typecheck/lint limpos; build sem warnings e smoke HTTP loopback aprovados. Audit de produção: um high node-forge sem patch, exit 1. Dependências preservadas, nenhuma instalada/substituída/atualizada; lockfile inalterado. Fonte oficial/advisory/registry revistos. Erros introduzidos de tipagem de teste, alias localhost e tracing amplo foram corrigidos e registrados em ACCEPTANCE.md.
+
+SEFAZ: adaptador protocolar 55/65 preservado, endpoints públicos revistos, sem consulta real. 613/100, protocolo/assinatura/XSD/upload manual testados com dados sintéticos. Nenhuma API automática pública documentada de download NFC-e localizada; portal interativo não foi automatizado. Sem A1 real, CRL/OCSP/PKIX completos, calendário real XSD ou recuperação/download autenticados comprovados.
+
+Estado operacional: demonstração local sintética disponível; **uso fiscal pessoal ainda não validado**. Falta configurar âncoras públicas, qualificar schema NT/UF/data/ambiente e executar checklist autorizado com A1 real/homologação; produção somente leitura em teste separado expressamente autorizado. Advisory permanece risco residual. Memória nativa/WASM não tem quota SO rígida. Guia exato em README.md.
+
+Comunicação: ownership/locks/status/caixa agent-4 revisados, sem novas mensagens/conflitos; especialistas avisados em arquivos únicos. Não há monitoramento automático. Codex 4 coordena Git. As informações seguintes são histórico da fase fiscal anterior, não o escopo atual.
+
+## Histórico — 2026-10-17
 
 Estado: fase de recuperação manual/validação estrutural integrada e validada localmente; sem aprovação para produção ou piloto fiscal operacional.
 

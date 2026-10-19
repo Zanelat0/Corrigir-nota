@@ -1,4 +1,12 @@
-# Contratos e APIs — v1, revisão fiscal de 2026-10-17
+# Contratos e APIs — v1, revisão pessoal/local de 2026-10-18
+
+## Alterações vigentes (superam descrições anteriores de modo remoto/perfil único)
+
+- CertificateValidationResult: campo opcional aditivo `certificateCnpj`, sem material privado. UI mostra CNPJ e avisos/trust parcial. Nenhuma mudança nos payloads das duas APIs ou gates de download.
+- Scripts pessoais vinculam somente 127.0.0.1 e forçam CORRIGIR_NOTA_LOCAL_ONLY=true/TRUST_PROXY=false. HTTP permitido exclusivamente nesse modo. Guard confere URL/Host loopback, mesma porta, Origin exato ao Host e Fetch Metadata. Violações: 403 INVALID_REQUEST/no-store antes de processar. Next pode normalizar URL como localhost sem impedir Host 127.0.0.1. Fora desse modo permanece exigência HTTPS do build. Eventual remoto exige controle de acesso apropriado e não foi preparado nesta etapa.
+- NFE_SCHEMA_POLICY_JSON: configuração pública do operador, até 64 regras/32 KiB; campos `profile`, `model` (55/65), `cUF`, `tpAmb` (1/2), `from`, `through` (ISO inclusivas), `reference` (critério de qualificação). Exige uma única correspondência com versão 4.00/modelo/UF/ambiente/data do XML. Perfis: `NFe-4.00-PL009n-NT2023.004-v1.01+NT2019.001-v1.62` e `NFe-4.00-PL010c-NT2022.002-v1.30+proc009n`. Política ausente/inválida/ambígua/fora da faixa: SCHEMA_POLICY_UNAVAILABLE, service_unavailable, sem XML. Não é rejeição fiscal SEFAZ. Não há calendário real pré-aprovado nem fallback após falha; exemplo no README é sintético.
+- REQUIRE_CERTIFICATE_REVOCATION=true bloqueia com 503 INTERNAL_ERROR retryable, pois CRL/OCSP não existe ainda. False não significa revogação aprovada. Confiança parcial/âncoras não foram enfraquecidas pelo uso local.
+- Uma instância local mantém limiter em memória; não exige login/limiter distribuído. Exemplos antigos de ingress ficam apenas como referência não implantada para eventual remoto.
 
 Origem: `src/types/contracts.ts`. Alterações desta revisão são aditivas, preservam `contractVersion: "1"` e os aliases usados pela UI. Certificado, chave, senha, PEM, Agent e XML SOAP bruto nunca são serializados na resposta HTTP. O XML final validado contém naturalmente os elementos públicos NFe/assinatura/protNFe.
 

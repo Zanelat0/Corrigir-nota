@@ -363,6 +363,8 @@ async function parsePkcs12(pfx: Buffer, password: string): Promise<ParsedMateria
 }
 
 function assessTrust(material: CertificateMaterial, warnings: RecoveryWarning[]) {
+  // No online revocation checker exists yet: never silently bypass a stricter policy.
+  if (process.env.REQUIRE_CERTIFICATE_REVOCATION === "true") fail("CERTIFICATE_TRUST_CONFIGURATION");
   let trust: ReturnType<typeof configuredCertificateTrust>;
   try { trust = configuredCertificateTrust(material.certificate, material.clientCertificateChainPem ?? material.certificate.toString()); }
   catch { fail("CERTIFICATE_TRUST_CONFIGURATION"); }
@@ -463,6 +465,7 @@ export async function validateCertificate(pfx: Buffer, password: string): Promis
       serialNumber: material.certificate.serialNumber,
       validFrom: material.validFrom,
       validTo: material.validTo,
+      certificateCnpj: material.certificateCnpj,
       errors: [],
       trust,
       ...(warnings.length > 0 ? { warnings } : {}),

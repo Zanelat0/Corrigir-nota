@@ -168,7 +168,7 @@ export default function Home() {
       if (controller.signal.aborted) return;
       setCertificateError({ code: "NETWORK_ERROR", message: "Falha de conexão ao validar. Verifique sua rede e tente novamente.", retryable: true });
     } finally {
-      setCertificateLoading(false);
+      if (activeRequest.current === controller) setCertificateLoading(false);
     }
   }
 
@@ -221,8 +221,7 @@ export default function Home() {
       if (controller.signal.aborted) return;
       setProcessError({ code: "NETWORK_ERROR", message: "Falha de conexão durante a análise. Seus arquivos continuam apenas nesta página; tente novamente.", retryable: true });
     } finally {
-      setProcessing(false);
-      setProcessLabel("");
+      if (activeRequest.current === controller) { setProcessing(false); setProcessLabel(""); }
     }
   }
 
@@ -264,9 +263,9 @@ export default function Home() {
           <span className="brand-name">corrigir<span>nota</span><i>.</i></span>
         </a>
         <div className="topbar-right">
-          <span className="secure-label"><Icon name="lock" /> Ambiente seguro</span>
+          <span className="secure-label"><Icon name="lock" /> Uso pessoal · Localhost</span>
           <span className="topbar-divider" />
-          <span className="topbar-help">Precisa de ajuda? <a href="mailto:suporte@corrigirnota.com.br">Fale com a gente</a></span>
+          <span className="topbar-help"><a href="#como-funciona">Como utilizar</a></span>
         </div>
       </header>
 
@@ -312,6 +311,7 @@ export default function Home() {
                   <span className="picker-action">Buscar</span>
                 </button>
                 <span className="field-hint" id="certificate-hint">Até 2 MiB. O arquivo não é armazenado.</span>
+                {certificate && <button className="restart-button" type="button" onClick={restart}>Remover certificado e limpar operação</button>}
                 <label className="field-label password-label" htmlFor="password">Senha do certificado <span>Obrigatório</span></label>
                 <input id="password" className="text-input" type="password" autoComplete="new-password" maxLength={256} value={password} onChange={(event) => { activeRequest.current?.abort(); setProcessing(false); setCertificateLoading(false); setPassword(event.target.value); setCertificateResult(null); setCertificateError(null); setRecovery(null); setAuthorizedXml(null); }} placeholder="Digite a senha do certificado" />
                 <button className="button button-primary validate-button" type="submit" disabled={!certificate || !password || certificateLoading}>
@@ -323,7 +323,8 @@ export default function Home() {
               {certificateError && <div className="inline-alert error-alert" role="alert"><Icon name="alert" /><div><strong>{certificateError.code}</strong><p>{certificateError.message}</p>{certificateError.requestId && <small>Referência: {certificateError.requestId}</small>}</div></div>}
               {certificateResult && <div className={`certificate-result${certificateResult.valid ? " result-valid" : " result-invalid"}`} role="status">
                 <div className="result-title"><span className="result-indicator"><Icon name={certificateResult.valid ? "check" : "alert"} /></span><div><strong>{certificateResult.valid ? "Certificado validado" : "Não foi possível validar o certificado"}</strong><small>{certificateResult.valid ? "Validade e leitura local confirmadas." : "Confira o arquivo, a senha e as mensagens abaixo."}</small></div></div>
-                {certificateResult.valid && <div className="cert-meta"><div><span>Titular</span><strong>{certificateResult.subject || "Não informado"}</strong></div><div><span>Válido até</span><strong>{formatDate(certificateResult.validTo)}</strong></div></div>}
+                {certificateResult.valid && <div className="cert-meta"><div><span>Titular</span><strong>{certificateResult.subject || "Não informado"}</strong></div><div><span>Válido até</span><strong>{formatDate(certificateResult.validTo)}</strong></div><div><span>CNPJ</span><strong>{certificateResult.certificateCnpj || "Não identificado"}</strong></div><div><span>Cadeia</span><strong>{certificateResult.trust?.status === "anchored" ? "Vinculada à âncora configurada (verificação parcial)" : "Confiança não comprovada"}</strong></div></div>}
+                {certificateResult.warnings?.map((warning) => <p className="local-only-note" key={warning.code}><Icon name="info" /> {warning.message}</p>)}
                 {certificateResult.errors.length > 0 && <ul className="error-list">{certificateResult.errors.map((error, index) => <li key={`${index}-${error}`}>{error}</li>)}</ul>}
                 {certificateResult.valid && <p className="local-only-note"><Icon name="info" /> Esta etapa confirma a validade local do A1. A comunicação e autenticação perante a SEFAZ ainda não foram confirmadas.</p>}
               </div>}
@@ -336,7 +337,7 @@ export default function Home() {
                 {!validCertificate && <span className="lock-corner" title="Valide o certificado primeiro"><Icon name="lock" /></span>}
               </div>
               <input ref={xmlInput} id="xml-file" className="visually-hidden" type="file" accept=".xml,text/xml,application/xml" disabled={!validCertificate} onChange={selectXml} />
-              <button className={`dropzone${xml ? " dropzone-ready" : ""}`} type="button" disabled={!validCertificate} onClick={() => xmlInput.current?.click()} onDragOver={(event) => { if (validCertificate) event.preventDefault(); }} onDrop={(event) => { event.preventDefault(); if (validCertificate) { const file = event.dataTransfer.files?.[0]; if (file) { setXml(file); setRecovery(null); setProcessError(null); } } }}>
+              <button className={`dropzone${xml ? " dropzone-ready" : ""}`} type="button" disabled={!validCertificate || processing} onClick={() => xmlInput.current?.click()} onDragOver={(event) => { if (validCertificate) event.preventDefault(); }} onDrop={(event) => { event.preventDefault(); if (validCertificate && !processing) { const file = event.dataTransfer.files?.[0]; if (file) { activeRequest.current?.abort(); setXml(file); setAuthorizedXml(null); setRecovery(null); setProcessError(null); setNotice(""); } } }}>
                 <span className="dropzone-icon"><Icon name={xml ? "file" : "upload"} /></span>
                 <strong>{xml?.name ?? "Arraste seu XML para cá"}</strong>
                 <span>{xml ? `${(xml.size / 1024).toFixed(0)} KB · XML original` : "ou clique para selecionar um arquivo"}</span>

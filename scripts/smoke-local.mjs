@@ -8,7 +8,7 @@ import assert from 'node:assert/strict';
 import forge from 'node-forge';
 
 const port = await new Promise((done) => { const socket = createServer(); socket.listen(0, '127.0.0.1', () => { const port = socket.address().port; socket.close(() => done(port)); }); });
-const server = spawn(process.execPath, [resolve('node_modules/next/dist/bin/next'), 'start', '-H', '127.0.0.1', '-p', String(port)], { windowsHide: true, stdio: 'ignore', env: { ...process.env, NODE_ENV: 'production', TRUST_PROXY: 'true', REQUIRE_TRUSTED_CLIENT_CERTIFICATE: 'false', ICP_BRASIL_TRUST_ROOTS_FILE: '' } });
+const server = spawn(process.execPath, [resolve('scripts/local.mjs'), 'start'], { windowsHide: true, stdio: ['ignore', 'ignore', 'ignore', 'ipc'], env: { ...process.env, PORT: String(port), NODE_ENV: 'production', REQUIRE_TRUSTED_CLIENT_CERTIFICATE: 'false', ICP_BRASIL_TRUST_ROOTS_FILE: '' } });
 const base = `http://127.0.0.1:${port}`;
 try {
   let ready = false;
@@ -21,7 +21,9 @@ try {
   cert.validity.notBefore = new Date(Date.now() - 60_000); cert.validity.notAfter = new Date(Date.now() + 86_400_000); cert.sign(privateKey, forge.md.sha256.create());
   const pfx = Buffer.from(forge.asn1.toDer(forge.pkcs12.toPkcs12Asn1(privateKey, [cert], 'synthetic-smoke-only', { algorithm: '3des', useMac: true })).getBytes(), 'latin1');
   const payload = { contractVersion: '1', certificatePfxBase64: pfx.toString('base64'), password: 'synthetic-smoke-only' }; pfx.fill(0);
-  const headers = { 'content-type': 'application/json', 'x-forwarded-proto': 'https', 'x-real-ip': '127.0.0.1' };
+  const headers = { 'content-type': 'application/json', origin: base };
+  const foreign = await fetch(`${base}/api/certificado/validar`, { method: 'POST', headers: { ...headers, origin: 'https://untrusted.invalid' }, body: '{}' });
+  assert.equal(foreign.status, 403, 'Foreign website must not invoke the local certificate API');
   const validation = await fetch(`${base}/api/certificado/validar`, { method: 'POST', headers, body: JSON.stringify(payload), signal: AbortSignal.timeout(10000) });
   assert.equal(validation.status, 200, 'Synthetic certificate worker did not validate through compiled route'); assert.equal((await validation.json()).valid, true);
   const invalidXml = await fetch(`${base}/api/notas/processar`, { method: 'POST', headers, body: JSON.stringify({ ...payload, xmlBase64: Buffer.from('<not-a-fiscal-document/>').toString('base64') }), signal: AbortSignal.timeout(10000) });
@@ -31,4 +33,4 @@ try {
   assert.ok(trace.files.some((p) => p.includes('schema-worker.mjs')), 'Missing XSD child in production trace');
   assert.ok(trace.files.some((p) => p.includes('node-forge/lib/index.js')), 'Missing certificate child dependency in production trace');
   console.log('Smoke local aprovado: rotas compiladas e A1 sintético isolado; nenhuma consulta SEFAZ.');
-} finally { server.kill(); }
+} finally { if (server.connected) server.disconnect(); else server.kill(); }

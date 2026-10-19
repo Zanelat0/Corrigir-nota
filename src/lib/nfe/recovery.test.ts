@@ -67,9 +67,9 @@ describe("NF-e recovery orchestration (simulated fixtures only)", () => {
       signatureVerifier: vi.fn().mockReturnValue(true),
       now: () => new Date("2026-10-17T03:00:00.000Z"),
     });
-    expect(result.status).toBe("rejected");
+    expect(result.status).toBe("service_unavailable");
     expect(result).not.toHaveProperty("authorizedXml");
-    expect(result.diagnostics.some((d) => d.code === "XSD_VALIDATION_FAILED")).toBe(true);
+    expect(result.diagnostics.some((d) => d.code === "SCHEMA_POLICY_UNAVAILABLE")).toBe(true);
     expect(result.protocol).not.toHaveProperty("originalProtNFeXml");
   });
 
