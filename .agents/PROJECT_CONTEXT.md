@@ -17,6 +17,8 @@ Não anexar o protocolo da chave alternativa ao documento de contingência. Pres
 
 ## Limites funcionais
 
+Demonstração visual local opcional disponível apenas no servidor de desenvolvimento com ENABLE_LOCAL_DEMO=true, loopback e sem proxy. Não exige A1, não usa APIs fiscais/SEFAZ e não executa criptografia fiscal; cenários são dados de apresentação SIMULAÇÃO, sem download. Produção impossibilita ativação pela flag/query. Guia de uso no README. Isso não modifica a pendência de validação fiscal real.
+
 O produto apenas consulta e recupera documentos. Não autoriza/transmite novas notas, não altera XML nem assinatura e não promete recuperação quando o mecanismo oficial disponível não fornece o XML autorizado. Nenhum teste automatizado deve chamar produção SEFAZ.
 
 A fase fiscal adicionou o envio manual de um segundo XML assinado obtido externamente: original, candidato, A1 e senha são reenviados, e a consulta é refeita. Só libera arquivo se chave/identidade/assinatura/digest/protocolo bruto e XSD completo coincidirem. Há portal interativo SVRS com certificado; não foi localizada API pública automática de download NFC-e na documentação consultada. Ver SVRS_RECOVERY_RESEARCH.md para o caso SC e limites de elegibilidade.

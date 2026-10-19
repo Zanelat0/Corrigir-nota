@@ -3,17 +3,22 @@ import { spawn } from 'node:child_process';
 import { generateKeyPairSync } from 'node:crypto';
 import { createServer } from 'node:net';
 import { resolve } from 'node:path';
-import { readFile } from 'node:fs/promises';
+import { readFile, readdir } from 'node:fs/promises';
 import assert from 'node:assert/strict';
 import forge from 'node-forge';
 
 const port = await new Promise((done) => { const socket = createServer(); socket.listen(0, '127.0.0.1', () => { const port = socket.address().port; socket.close(() => done(port)); }); });
-const server = spawn(process.execPath, [resolve('scripts/local.mjs'), 'start'], { windowsHide: true, stdio: ['ignore', 'ignore', 'ignore', 'ipc'], env: { ...process.env, PORT: String(port), NODE_ENV: 'production', REQUIRE_TRUSTED_CLIENT_CERTIFICATE: 'false', ICP_BRASIL_TRUST_ROOTS_FILE: '' } });
+const server = spawn(process.execPath, [resolve('scripts/local.mjs'), 'start'], { windowsHide: true, stdio: ['ignore', 'ignore', 'ignore', 'ipc'], env: { ...process.env, PORT: String(port), NODE_ENV: 'production', ENABLE_LOCAL_DEMO: 'true', REQUIRE_TRUSTED_CLIENT_CERTIFICATE: 'false', ICP_BRASIL_TRUST_ROOTS_FILE: '' } });
 const base = `http://127.0.0.1:${port}`;
 try {
   let ready = false;
   for (let i = 0; i < 100; i++) { try { ready = (await fetch(base, { signal: AbortSignal.timeout(200) })).ok; } catch { /* starting */ } if (ready) break; await new Promise((r) => setTimeout(r, 100)); }
   assert.ok(ready, 'Local build did not start');
+  const html = await (await fetch(`${base}/?demo=true`)).text();
+  assert.ok(!html.includes('Modo de demonstração') && !html.includes('Executar demonstração'), 'Production build must ignore demo env flag and query parameter');
+  for (const asset of await readdir('.next/static/chunks', { recursive: true })) {
+    if (asset.endsWith('.js')) assert.ok(!(await readFile(resolve('.next/static/chunks', asset), 'utf8')).includes('SIMULACAO_SEM_VALIDADE_FISCAL'), 'Demo scenarios must not be bundled into production browser assets');
+  }
   const pair = generateKeyPairSync('rsa', { modulusLength: 2048 });
   const privateKey = forge.pki.privateKeyFromPem(pair.privateKey.export({ type: 'pkcs8', format: 'pem' }).toString());
   const cert = forge.pki.createCertificate(); cert.publicKey = forge.pki.publicKeyFromPem(pair.publicKey.export({ type: 'spki', format: 'pem' }).toString()); cert.serialNumber = '91';

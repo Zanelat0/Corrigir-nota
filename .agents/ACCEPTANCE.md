@@ -1,5 +1,11 @@
 # Aceitação técnica — revisão pessoal/local de 2026-10-18
 
+## Demonstração offline — rodada posterior
+
+Checagem adicional do smoke: o marcador exclusivo dos cenários não existe nos chunks JavaScript de produção; flags ligadas no build/runtime e query não disponibilizam a demo. Rotas API/módulos certificado/SEFAZ, página fiscal e DTOs HTTP confirmados sem diff. Nenhuma dependência nova. Servidor temporário usado no Chrome encerrado após a conferência.
+
+118 testes/13 arquivos. Adicionadas coberturas: opt-in/development/loopback/proxy, bloqueio em production mesmo com flags, sete cenários marcados, nenhum XML/provenance/download, guard fiscal rejeitando demo, 613→100, manual→sucesso fictício, ausência de fetch/campos de A1/upload e modo normal inicial. Smoke em produção com flag true e query demo=true não mostra demo. Build executado também com flag ligada. Conferência Chrome de 100 e manual aprovada; avisos externos de extensão (bis_*, M_ID) registrados, não mascarados. Os resultados são de apresentação, não processamento fiscal real. Nenhum endpoint fiscal alterado.
+
 ## Rodada vigente (histórico anterior preservado abaixo)
 
 Baseline 63d4678 limpa e reexecutada: typecheck/lint e 84/84 testes aprovados. Rodada nova: **103 testes em 12 arquivos** aprovados, typecheck/lint limpos, build sem warnings e smoke HTTP loopback aprovados. Audit de produção exit 1: um high node-forge sem patch. Nenhuma dependência alterada/instalada nesta sessão; scripts npm alterados, lockfile preservado.

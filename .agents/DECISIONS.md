@@ -1,5 +1,13 @@
 # Registro de decisões
 
+## D-022 — demonstração visual offline e não fiscal (2026-10-18)
+
+- Flag ENABLE_LOCAL_DEMO=false por padrão. Layout servidor só importa o shell em NODE_ENV=development, modo loopback explícito, Host local e sem proxy. Build produção compila o branch desabilitado; teste de build/start com flag true e query demo=true não mostra demo. Nenhum parâmetro de cliente contorna A1 nas rotas reais, que não foram alteradas.
+- Shell monta exclusivamente workspace fiscal OU demo; troca desmonta/limpa operação anterior. Sete cenários de apresentação sem fetch/rede, motor fiscal, certificados ou uploads reais; manual usa fixture interna. Não há XML sintético/download, assinatura ficticiamente validada ou procedência fiscal. DTO demo é separado, marca simulation:true e sempre downloadAvailable:false; guard fiscal rejeita marcador simulation. Painel compartilhado identifica SIMULAÇÃO em título, descrição, cStat e aviso de bloqueio.
+- Reutilizada identidade sintética (CNPJ/chave/número) das fixtures automatizadas em helper puro, sem levar Node/forge/chaves privadas ao browser. Testes criptográficos anteriores preservados; demo não é homologação fiscal.
+- next dev tentou adicionar bloco automático ao AGENTS.md; removido apenas o bloco gerado nesta sessão, preservando as regras do usuário. agentRules=false (configuração suportada localmente) impede reescrita automática futura. Build regenera next-env.d.ts normalmente.
+- Conferência Chrome: cenário 100 e manual (indisponível → fixture correspondente → sucesso fictício); sem A1/formulário real ou download. Avisos vieram de extensão: atributos bis_* no DOM e erro M_ID em chrome-extension. Não desabilitamos extensão nem mascaramos warning.
+
 ## D-018 — escopo pessoal e loopback (2026-10-18)
 
 - Decisão atual substitui SaaS: uma página, sem login/banco/histórico/cobrança/infra distribuída. Preservados módulos entregues, sem reescrita.

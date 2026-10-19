@@ -1,5 +1,7 @@
 # Arquitetura — revisão pessoal/local de 2026-10-18
 
+Demonstração opcional: layout servidor gated por development + ENABLE_LOCAL_DEMO=true + modo local/Host loopback/sem proxy. Import dinâmico só nesse branch; produção permanece sem demo mesmo com flag/query. Shell alterna por montagem exclusiva entre filhos fiscais e DemoWorkspace, com estado próprio. Cenários são fixtures puras de apresentação, sem fetch/API/A1/motor fiscal; identidade reaproveitada de testes. DTO distinto com simulation:true, sem XML/provenance e sem download. Painel compartilhado mostra aviso SIMULAÇÃO; guards fiscais recusam o marcador. Nenhuma rota fiscal modificada ou nova rota demo criada.
+
 ## Revisão vigente (supera referências anteriores a deploy SaaS)
 
 Escopo exclusivamente pessoal, sem login/banco/infraestrutura distribuída. `npm run dev`/`npm start` invocam scripts/local.mjs, que vincula 127.0.0.1 e força CORRIGIR_NOTA_LOCAL_ONLY=true/TRUST_PROXY=false. HTTP é permitido somente nesse modo, mesmo no build. Guard confere URL/Host/porta/Origin/Fetch Metadata; Next pode normalizar URL como localhost, mas Host continua loopback e Origin deve corresponder exatamente ao Host. Remoto fica fora do escopo e exigirá HTTPS/controle de acesso.

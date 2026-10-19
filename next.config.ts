@@ -1,6 +1,7 @@
 import type { NextConfig } from "next";
 const certificateAssets = ["./.workers/**/*", "./node_modules/node-forge/package.json", "./node_modules/node-forge/lib/**/*"];
 const config: NextConfig = {
+  agentRules: false,
   serverExternalPackages: ["libxml2-wasm"],
   outputFileTracingIncludes: { "/api/notas/processar": ["./schemas/nfe/pl009n/**/*.xsd", "./schemas/nfe/pl010c/**/*.xsd", "./node_modules/libxml2-wasm/**/*", "./src/lib/nfe/schema-worker.mjs", ...certificateAssets], "/api/certificado/validar": certificateAssets },
   async headers() { return [{ source: "/:path*", headers: [

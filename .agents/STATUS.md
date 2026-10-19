@@ -1,5 +1,11 @@
 # Status geral — revisão vigente de 2026-10-18
 
+## Demonstração local (entrega atual)
+
+Sete cenários visuais offline implementados; flag ENABLE_LOCAL_DEMO, padrão false, apenas development/loopback/sem proxy. Shell desmonta área anterior ao alternar e nunca mistura dados reais/simulados. DTO demo separado, sem XML/download/A1/rede; painel existente reutilizado com marca SIMULAÇÃO e guards recusando resultado demo. Helper puro reaproveita identidade das fixtures sem chaves privadas. Rotas fiscais intactas; nenhum endpoint demo criado. Nenhuma dependência nova.
+
+Verificações: typecheck/lint, 118 testes/13 arquivos, build e smoke de produção com flag true/query demo=true. Conferência no Chrome dos cenários 100/manual, sem upload real. Avisos de extensão de browser documentados no README e decisões, não suprimidos. Evidência visual sintética: .agents/artifacts/demo-local.png. Sem validação real A1/SEFAZ. Iniciar com ENABLE_LOCAL_DEMO=true e npm run dev; detalhes no README.
+
 ## Uso exclusivamente pessoal/local
 
 Baseline 63d4678 conferida sem alterações e reexecutada: 84 testes/11 arquivos, typecheck/lint aprovados. Escopo atual substitui SaaS: uma página, sem login/banco/histórico/contas/cobrança; módulos funcionais preservados. Documentação histórica abaixo não exige ingress/infra distribuída para localhost.

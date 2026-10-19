@@ -1,5 +1,7 @@
 # Contratos e APIs — v1, revisão pessoal/local de 2026-10-18
 
+Demo local: sem endpoint HTTP. `src/lib/demo/scenarios.ts` define DemoOutcome/DemoRecoveryResult exclusivamente de apresentação, com `kind: simulation`, `simulation: true`, downloadAvailable:false e sem authorizedXml/provenance mesmo no sucesso fictício. Não é RecoveryResult fiscal. Guard isRecoveryResult rejeita simulation; canDownloadRecovered também bloqueia. Não mudar contractVersion nem payloads das rotas fiscais por causa da demo. UI não solicita A1/arquivos/senha; seleção de cenário não é enviada ao servidor fiscal. Disponibilidade decidida no layout servidor somente em development opt-in/loopback, nunca via query ou NEXT_PUBLIC flag.
+
 ## Alterações vigentes (superam descrições anteriores de modo remoto/perfil único)
 
 - CertificateValidationResult: campo opcional aditivo `certificateCnpj`, sem material privado. UI mostra CNPJ e avisos/trust parcial. Nenhuma mudança nos payloads das duas APIs ou gates de download.

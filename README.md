@@ -34,6 +34,23 @@ Reinicie após alterar configuração. Não há faixa de vigência real pré-apr
 
 ## Utilizar
 
+### Demonstração visual offline (opcional)
+
+Sem A1, senha, XML real, configuração de âncoras ou schema: no PowerShell, a partir da raiz:
+
+```powershell
+$env:ENABLE_LOCAL_DEMO='true'
+npm run dev
+```
+
+Abra http://127.0.0.1:3000 e marque **Modo de demonstração**. Em **Testar sistema com dados fictícios**, selecione um dos sete cenários e clique **Executar demonstração**. No cenário manual, execute primeiro e use **Fornecer XML correspondente fictício**: o próprio sistema fornece a fixture, sem upload de arquivo real. Alterar cenário limpa o resultado; alternar entre demonstração e processamento normal desmonta a área anterior e limpa sua operação.
+
+Todos os dados e verificações são SIMULAÇÃO, sem validade fiscal. Não há download de XML, certificado sintético privado no browser, chamada a API fiscal ou consulta SEFAZ: demonstração de apresentação/estados apenas, não execução do motor criptográfico. Reutiliza a identidade das fixtures automatizadas e o painel de resultados existente. Testes criptográficos/XSD continuam separados no `npm test`.
+
+Desabilitado por padrão. Para desligar: encerre com Ctrl+C, execute `Remove-Item Env:ENABLE_LOCAL_DEMO -ErrorAction SilentlyContinue` e reinicie. Se configurou em `.env.local`, remova a opção lá também. Só funciona com NODE_ENV=development, flag true, modo loopback e proxy desabilitado. `npm run build`/`npm start` nunca habilitam a demonstração, mesmo com flag true ou `?demo=true`; gate de produção é compilado pelo Next e os cenários não são incluídos nos chunks JavaScript de produção. Não foi criada rota demo nem exceção nas rotas reais. O smoke verifica produção com a flag deliberadamente ligada no ambiente e a ausência dos cenários nos assets.
+
+No Chrome usado na conferência surgiram avisos de hidratação por atributos `bis_*` e erro em `chrome-extension://.../executors/200.js`, originados de extensão do navegador. Não alteramos extensões nem suprimimos avisos. Os cenários 100 e manual foram conferidos na UI mesmo assim; use perfil sem extensões caso o seu navegador apresente interferência semelhante.
+
 1. Selecione o A1 `.pfx`/`.p12` (até 2 MiB), informe a senha e valide. Veja validade, CNPJ e avisos. Isso não confirma autenticação SEFAZ.
 2. Selecione XML UTF-8 (até 5 MiB) e processe. Modelo, UF e ambiente são extraídos do próprio XML. **tpAmb=1 fará consulta de leitura em produção quando você clicar**; use apenas documento próprio e autorização apropriada. Não existe emissão, transmissão de notas ou mudança artificial de ambiente/chave.
 3. O resultado mostra identificação, situação, chave alternativa/protocolo e diagnóstico. Só há download após todas as verificações. Um retorno 100 sozinho não basta.

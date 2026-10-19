@@ -1,4 +1,5 @@
 import type { RecoveryResult, RecoveredFileProvenance } from "../types/contracts";
+import type { DemoRecoveryResult } from "../lib/demo/scenarios";
 import { Icon } from "./icon";
 
 const recoveryStatuses = ["received", "parsing", "certificate_invalid", "consulting", "alternative_key_found", "authorized_xml_unavailable", "recovered", "rejected", "service_unavailable", "error"] as const;
@@ -15,7 +16,7 @@ function isStructuredList(value: unknown): value is Array<{ code: string; severi
 }
 
 export function isRecoveryResult(value: unknown): value is RecoveryResult {
-  if (!isRecord(value) || value.contractVersion !== "1" ||
+  if (!isRecord(value) || "simulation" in value || value.contractVersion !== "1" ||
     typeof value.status !== "string" || !recoveryStatuses.includes(value.status as typeof recoveryStatuses[number]) ||
     typeof value.diagnosis !== "string" ||
     (value.expiresAt !== undefined && (typeof value.expiresAt !== "string" || !Number.isFinite(Date.parse(value.expiresAt)))) ||
@@ -42,6 +43,7 @@ export function isRecoveryResult(value: unknown): value is RecoveryResult {
 
 export function canDownloadRecovered(result: RecoveryResult | null): result is Extract<RecoveryResult, { status: "recovered" }> {
   return result?.status === "recovered" &&
+    !("simulation" in result) &&
     result.downloadAvailable === true &&
     result.provenance?.signatureValidated === true && result.provenance?.schemaValidated === true && result.provenance?.protocolMatched === true &&
     (!result.expiresAt || Date.parse(result.expiresAt) > Date.now()) &&
@@ -70,16 +72,17 @@ function booleanLabel(value: boolean) {
   return value ? "Validado" : "Não validado";
 }
 
-export function RecoveryResultPanel({ result, onDownload }: { result: RecoveryResult; onDownload: () => void }) {
-  const downloadable = canDownloadRecovered(result);
+export function RecoveryResultPanel({ result, onDownload }: { result: RecoveryResult | DemoRecoveryResult; onDownload: () => void }) {
+  const simulation = "simulation" in result && result.simulation === true;
+  const downloadable = !("simulation" in result) && canDownloadRecovered(result);
   const consultation = result.consultation;
   const originalKey = result.originalKey ?? result.originalAccessKey ?? consultation?.queriedAccessKey;
   const otherKey = result.authorizedKey ?? result.authorizedAccessKey ?? consultation?.alternativeAccessKey;
   const keyDivergence = Boolean(originalKey && otherKey && originalKey !== otherKey);
   const isUnavailable = result.status === "authorized_xml_unavailable";
-  const isRecovered = result.status === "recovered" && downloadable;
+  const isRecovered = result.status === "recovered" && (downloadable || simulation);
   const statusTone = isRecovered ? "green" : isUnavailable ? "red" : keyDivergence ? "amber" : "blue";
-  const statusTitle = isRecovered
+  const statusTitle = simulation && isRecovered ? "SIMULAÇÃO — Recuperação fictícia concluída" : isRecovered
     ? "Recuperação concluída e validada"
     : isUnavailable
       ? "XML autorizado indisponível"
@@ -88,7 +91,7 @@ export function RecoveryResultPanel({ result, onDownload }: { result: RecoveryRe
         : result.status === "alternative_key_found"
           ? "Chave alternativa localizada"
           : "Diagnóstico da recuperação";
-  const statusDescription = isRecovered
+  const statusDescription = simulation ? "SIMULAÇÃO — Dados e verificações fictícios; sem consulta SEFAZ e sem validade fiscal." : isRecovered
     ? "A identidade do documento, a assinatura e o protocolo foram conferidos."
     : isUnavailable
       ? "A consulta não forneceu o XML autorizado correspondente; o download permanece indisponível."
@@ -100,7 +103,7 @@ export function RecoveryResultPanel({ result, onDownload }: { result: RecoveryRe
     <div className="result-content">
       <div className={`status-banner tone-${statusTone}`}>
         <span className="status-icon"><Icon name={isRecovered ? "check" : isUnavailable || result.status === "rejected" ? "alert" : "info"} /></span>
-        <span><strong>{statusTitle}</strong><small>{statusDescription}</small></span>
+        <span><strong>{simulation && !isRecovered ? `SIMULAÇÃO — ${statusTitle}` : statusTitle}</strong><small>{statusDescription}</small></span>
       </div>
 
       {keyDivergence && <div className="divergence-card" role="note">
@@ -116,7 +119,7 @@ export function RecoveryResultPanel({ result, onDownload }: { result: RecoveryRe
         <div className="data-row"><span>Número da nota</span><strong>{result.noteNumber ?? "—"}</strong></div>
         <div className="data-row"><span>Modelo</span><strong>{result.model ?? "—"}</strong></div>
         <div className="data-row"><span>Série</span><strong>{result.series ?? "—"}</strong></div>
-        <div className="data-row"><span>cStat SEFAZ</span><strong>{result.cStat ?? consultation?.cStat ?? consultation?.protocol?.cStat ?? "—"}{consultation?.xMotivo ? <em>{consultation.xMotivo}</em> : null}</strong></div>
+        <div className="data-row"><span>{simulation ? "cStat fictício (SIMULAÇÃO)" : "cStat SEFAZ"}</span><strong>{result.cStat ?? consultation?.cStat ?? consultation?.protocol?.cStat ?? "—"}{consultation?.xMotivo ? <em>{consultation.xMotivo}</em> : null}</strong></div>
         <div className="data-row"><span>Protocolo</span><strong className="mono-value">{result.protocolNumber ?? result.protocol?.protocolNumber ?? consultation?.protocol?.protocolNumber ?? "—"}</strong></div>
         <div className="data-row"><span>Autoridade</span><strong>{consultation?.authority ?? "—"}</strong></div>
         <div className="data-row"><span>Ambiente</span><strong>{consultation?.environment === "production" ? "Produção" : consultation?.environment === "homologation" ? "Homologação" : "—"}</strong></div>
@@ -158,7 +161,7 @@ export function RecoveryResultPanel({ result, onDownload }: { result: RecoveryRe
       </section>}
 
       {consultation?.success === false && <div className="warning-box"><Icon name="alert" /><span>A consulta não confirmou autorização. {consultation.xMotivo ?? "Confira o status e tente novamente mais tarde."}</span></div>}
-      {!downloadable
+      {simulation ? <div className="no-download"><Icon name="lock" /><span>SIMULAÇÃO — Sem arquivo XML para download. Nenhum documento fiscal foi autorizado ou validado.</span></div> : !downloadable
         ? <div className={`no-download${isUnavailable ? " unavailable-download" : ""}`}><Icon name="lock" /><span>{isUnavailable ? "Download indisponível: o XML autorizado correspondente não foi recuperado." : "Download indisponível. Só liberamos o arquivo quando ele corresponde à chave e ao protocolo validados."}</span></div>
         : <button className="button button-download" type="button" onClick={onDownload}><Icon name="download" /> Baixar XML autorizado e validado</button>}
       {!!consultation?.errorCode && <div className="diag-meta"><span>Falha de consulta</span><strong>{consultation.errorCode}</strong></div>}
