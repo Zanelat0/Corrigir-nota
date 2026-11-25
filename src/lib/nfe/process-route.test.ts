@@ -16,6 +16,14 @@ import { POST } from "../../app/api/notas/processar/route";
 import { syntheticNfe, syntheticPfx } from "./testing/synthetic";
 
 describe("Manual upload HTTP acceptance (synthetic A1, simulated consultation)", () => {
+  it("blocks production before decoding the certificate in homologation-only mode", async () => {
+    vi.stubEnv("CORRIGIR_NOTA_HOMOLOGATION_ONLY", "true");
+    const productionXml = syntheticNfe().xml.replace("<tpAmb>2</tpAmb>", "<tpAmb>1</tpAmb>");
+    const response = await POST(new Request("https://local.test/api/notas/processar", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ contractVersion: "1", xmlBase64: Buffer.from(productionXml).toString("base64"), certificatePfxBase64: "!!!never-decoded!!!", password: "synthetic-test-password" }) }));
+    expect(response.status).toBe(422); expect((await response.json()).error.message).toContain("somente XML de homologação");
+    expect(disposed).not.toHaveBeenCalled();
+  });
+
   it("processes the original and corresponding authorized file through the complete API", async () => {
     disposed.mockClear(); consult.mockReset();
     const original = syntheticNfe("9"); const authorized = syntheticNfe("1");

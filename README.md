@@ -34,6 +34,12 @@ Reinicie após alterar configuração. Não há faixa de vigência real pré-apr
 
 ## Utilizar
 
+### Executor local de homologação
+
+O launcher local (`npm run dev`/`npm start`) define `CORRIGIR_NOTA_HOMOLOGATION_ONLY=true`. A interface exige selecionar primeiro o XML; o fluxo fiscal só libera o certificado depois dessa seleção. A rota analisa `ide/tpAmb` antes de decodificar o PFX e recusa qualquer documento que não seja `tpAmb=2`. O endpoint é resolvido internamente por UF/modelo e ambiente de homologação; URLs enviadas pelo cliente não são aceitas. Não há fallback para produção nem operações de autorização, evento, cancelamento ou inutilização.
+
+Essa barreira é uma proteção de ensaio, não uma qualificação de certificado ou prova de autenticação SEFAZ. Antes de usar um A1 real, configure raízes públicas qualificadas, política de revogação e `NFE_SCHEMA_POLICY_JSON`. Se a cadeia/revogação ou o perfil XSD não puderem ser comprovados, o processamento deve permanecer bloqueado.
+
 ### Demonstração visual offline (opcional)
 
 Sem A1, senha, XML real, configuração de âncoras ou schema: no PowerShell, a partir da raiz:

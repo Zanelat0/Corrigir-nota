@@ -1,5 +1,6 @@
 import { CertificateModuleError, createCertificateContext } from "../../../../lib/certificate";
 import { recoverNfe } from "../../../../lib/nfe/recovery";
+import { parseNfeXml } from "../../../../lib/nfe/xml";
 import { apiFailure, decodeLimitedBase64, protectSensitivePost, readSensitiveJson, RequestInputError } from "../../../../lib/security/requests";
 
 export const runtime = "nodejs";
@@ -13,12 +14,21 @@ export async function POST(request: Request): Promise<Response> {
     let context: Awaited<ReturnType<typeof createCertificateContext>> | undefined;
     try {
       xml = decodeLimitedBase64(payload.xmlBase64, 5 * 1024 * 1024, "XML original");
-      if (payload.authorizedXmlBase64 !== undefined) authorized = decodeLimitedBase64(payload.authorizedXmlBase64, 5 * 1024 * 1024, "XML autorizado");
-      pfx = decodeLimitedBase64(payload.certificatePfxBase64, 2 * 1024 * 1024, "Certificado");
       let xmlText: string; let authorizedText: string | undefined;
       try {
-        const decoder = new TextDecoder("utf-8", { fatal: true }); xmlText = decoder.decode(xml); authorizedText = authorized ? decoder.decode(authorized) : undefined;
+        const decoder = new TextDecoder("utf-8", { fatal: true }); xmlText = decoder.decode(xml);
       } catch { return apiFailure(422, "INVALID_XML", "Os XMLs precisam ser UTF-8 válidos."); }
+      // Local homologation runs must reject production before decoding or parsing the A1.
+      // The launcher sets this flag; it is fail-closed when explicitly enabled.
+      if (process.env.CORRIGIR_NOTA_HOMOLOGATION_ONLY === "true") {
+        let parsed: ReturnType<typeof parseNfeXml>;
+        try { parsed = parseNfeXml(xmlText); } catch { return apiFailure(422, "INVALID_XML", "O XML não pôde ser identificado antes da validação do certificado."); }
+        if (parsed.ide.tpAmb !== "2") return apiFailure(422, "INVALID_REQUEST", "Este executor aceita somente XML de homologação (tpAmb=2).");
+      }
+      if (payload.authorizedXmlBase64 !== undefined) authorized = decodeLimitedBase64(payload.authorizedXmlBase64, 5 * 1024 * 1024, "XML autorizado");
+      pfx = decodeLimitedBase64(payload.certificatePfxBase64, 2 * 1024 * 1024, "Certificado");
+      try { const decoder = new TextDecoder("utf-8", { fatal: true }); authorizedText = authorized ? decoder.decode(authorized) : undefined; }
+      catch { return apiFailure(422, "INVALID_XML", "Os XMLs precisam ser UTF-8 válidos."); }
       context = await createCertificateContext(pfx, payload.password);
       const result = await recoverNfe({ xml: xmlText, authorizedXml: authorizedText, certificateContext: context });
       return Response.json(result, { headers: { "Cache-Control": "no-store" } });

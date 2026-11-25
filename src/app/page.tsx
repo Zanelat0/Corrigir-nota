@@ -114,6 +114,7 @@ export default function Home() {
   function selectXml(event: ChangeEvent<HTMLInputElement>) {
     activeRequest.current?.abort(); setProcessing(false);
     const file = event.target.files?.[0] ?? null;
+    setCertificate(null); setPassword(""); setCertificateResult(null); setCertificateError(null);
     setXml(file);
     setAuthorizedXml(null);
     setRecovery(null);
@@ -297,15 +298,15 @@ export default function Home() {
 
         <div className="work-grid">
           <div className="form-column">
-            <section className={`panel certificate-panel${validCertificate ? " panel-complete" : ""}`} aria-labelledby="certificate-heading">
+            <section className={`panel certificate-panel${!xml ? " panel-locked" : validCertificate ? " panel-complete" : ""}`} aria-labelledby="certificate-heading">
               <div className="panel-heading">
                 <span className="panel-icon"><Icon name="key" /></span>
                 <div><div className="panel-title-row"><h3 id="certificate-heading">Certificado digital</h3>{validCertificate && <span className="mini-state success"><Icon name="check" /> Válido</span>}</div><p>Use seu certificado A1 para consultar a SEFAZ.</p></div>
               </div>
               <form onSubmit={validateCertificate}>
                 <label className="field-label" htmlFor="certificate">Arquivo do certificado <span>Obrigatório</span></label>
-                <input ref={certificateInput} id="certificate" className="visually-hidden" type="file" accept=".pfx,.p12,application/x-pkcs12" onChange={selectCertificate} />
-                <button className={`file-picker${certificate ? " has-file" : ""}`} type="button" onClick={() => certificateInput.current?.click()} aria-describedby="certificate-hint">
+                <input ref={certificateInput} id="certificate" className="visually-hidden" type="file" accept=".pfx,.p12,application/x-pkcs12" disabled={!xml} onChange={selectCertificate} />
+                <button className={`file-picker${certificate ? " has-file" : ""}`} type="button" disabled={!xml} onClick={() => certificateInput.current?.click()} aria-describedby="certificate-hint">
                   <span className="picker-icon"><Icon name={certificate ? "file" : "upload"} /></span>
                   <span className="picker-text"><strong>{certificate?.name ?? "Selecionar arquivo .PFX ou .P12"}</strong><small>{certificate ? `${(certificate.size / 1024).toFixed(0)} KB · A1` : "Clique para buscar no seu dispositivo"}</small></span>
                   <span className="picker-action">Buscar</span>
@@ -313,8 +314,8 @@ export default function Home() {
                 <span className="field-hint" id="certificate-hint">Até 2 MiB. O arquivo não é armazenado.</span>
                 {certificate && <button className="restart-button" type="button" onClick={restart}>Remover certificado e limpar operação</button>}
                 <label className="field-label password-label" htmlFor="password">Senha do certificado <span>Obrigatório</span></label>
-                <input id="password" className="text-input" type="password" autoComplete="new-password" maxLength={256} value={password} onChange={(event) => { activeRequest.current?.abort(); setProcessing(false); setCertificateLoading(false); setPassword(event.target.value); setCertificateResult(null); setCertificateError(null); setRecovery(null); setAuthorizedXml(null); }} placeholder="Digite a senha do certificado" />
-                <button className="button button-primary validate-button" type="submit" disabled={!certificate || !password || certificateLoading}>
+                <input id="password" className="text-input" type="password" autoComplete="new-password" maxLength={256} value={password} disabled={!xml} onChange={(event) => { activeRequest.current?.abort(); setProcessing(false); setCertificateLoading(false); setPassword(event.target.value); setCertificateResult(null); setCertificateError(null); setRecovery(null); setAuthorizedXml(null); }} placeholder={xml ? "Digite a senha do certificado" : "Selecione primeiro um XML de homologação"} />
+                <button className="button button-primary validate-button" type="submit" disabled={!xml || !certificate || !password || certificateLoading}>
                   {certificateLoading ? <><span className="spinner" /> Validando…</> : <>Validar certificado <Icon name="arrow" /></>}
                 </button>
               </form>
@@ -334,16 +335,16 @@ export default function Home() {
               <div className="panel-heading">
                 <span className="panel-icon"><Icon name="file" /></span>
                 <div><div className="panel-title-row"><h3 id="xml-heading">XML original</h3>{xml && <span className="mini-state"><Icon name="check" /> Selecionado</span>}</div><p>Envie o XML original que precisa consultar.</p></div>
-                {!validCertificate && <span className="lock-corner" title="Valide o certificado primeiro"><Icon name="lock" /></span>}
+                {!xml && <span className="lock-corner" title="Selecione o XML antes do certificado"><Icon name="lock" /></span>}
               </div>
-              <input ref={xmlInput} id="xml-file" className="visually-hidden" type="file" accept=".xml,text/xml,application/xml" disabled={!validCertificate} onChange={selectXml} />
-              <button className={`dropzone${xml ? " dropzone-ready" : ""}`} type="button" disabled={!validCertificate || processing} onClick={() => xmlInput.current?.click()} onDragOver={(event) => { if (validCertificate) event.preventDefault(); }} onDrop={(event) => { event.preventDefault(); if (validCertificate && !processing) { const file = event.dataTransfer.files?.[0]; if (file) { activeRequest.current?.abort(); setXml(file); setAuthorizedXml(null); setRecovery(null); setProcessError(null); setNotice(""); } } }}>
+              <input ref={xmlInput} id="xml-file" className="visually-hidden" type="file" accept=".xml,text/xml,application/xml" onChange={selectXml} />
+              <button className={`dropzone${xml ? " dropzone-ready" : ""}`} type="button" disabled={processing} onClick={() => xmlInput.current?.click()} onDragOver={(event) => { if (!processing) event.preventDefault(); }} onDrop={(event) => { event.preventDefault(); if (!processing) { const file = event.dataTransfer.files?.[0]; if (file) { activeRequest.current?.abort(); setCertificate(null); setPassword(""); setCertificateResult(null); setCertificateError(null); setXml(file); setAuthorizedXml(null); setRecovery(null); setProcessError(null); setNotice(""); } } }}>
                 <span className="dropzone-icon"><Icon name={xml ? "file" : "upload"} /></span>
                 <strong>{xml?.name ?? "Arraste seu XML para cá"}</strong>
                 <span>{xml ? `${(xml.size / 1024).toFixed(0)} KB · XML original` : "ou clique para selecionar um arquivo"}</span>
                 {!xml && <span className="dropzone-button">Selecionar XML</span>}
               </button>
-              <div className="xml-footnote"><Icon name="info" /> {validCertificate ? "Até 5 MiB. O XML original será preservado." : "Valide o certificado para liberar o envio do XML."}</div>
+              <div className="xml-footnote"><Icon name="info" /> Até 5 MiB. Selecione primeiro o XML; certificados e senhas só ficam disponíveis depois.</div>
             </section>
 
             {validCertificate && <form onSubmit={processDocument} className="submit-row">

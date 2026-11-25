@@ -13,7 +13,7 @@ if (!/^\d{1,5}$/.test(port) || Number(port) < 1 || Number(port) > 65535) {
 }
 const child = spawn(process.execPath, [resolve('node_modules/next/dist/bin/next'), mode, '-H', '127.0.0.1', '-p', port], {
   windowsHide: true, stdio: 'inherit',
-  env: { ...process.env, CORRIGIR_NOTA_LOCAL_ONLY: 'true', TRUST_PROXY: 'false' },
+  env: { ...process.env, CORRIGIR_NOTA_LOCAL_ONLY: 'true', TRUST_PROXY: 'false', CORRIGIR_NOTA_HOMOLOGATION_ONLY: 'true' },
 });
 for (const signal of ['SIGINT', 'SIGTERM']) process.once(signal, () => child.kill(signal));
 // Used by the smoke harness to avoid leaving an orphan Next process on Windows.
